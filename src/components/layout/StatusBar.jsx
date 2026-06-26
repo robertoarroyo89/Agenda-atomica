@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, LogOut, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut, RefreshCw, ListChecks } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useAgenda } from '../../context/AgendaContext'
 
 export default function StatusBar() {
   const { user, cerrarSesion } = useAuth()
-  const { calendar, syncing } = useAgenda()
+  const { calendar, syncing, abrirEditorHabitos } = useAgenda()
   const [open, setOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -77,6 +77,17 @@ export default function StatusBar() {
                 />
                 {syncing ? 'Sincronizando…' : 'Guardado en la nube'}
               </div>
+              <div className="my-1 h-px bg-zinc-200/70" />
+              <button
+                onClick={() => {
+                  setOpen(false)
+                  abrirEditorHabitos()
+                }}
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium text-zinc-700 transition-colors active:bg-zinc-100"
+              >
+                <ListChecks className="h-[18px] w-[18px]" strokeWidth={2} />
+                Editar hábitos
+              </button>
               <button
                 onClick={cerrarSesion}
                 className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-[15px] font-medium text-ios-red transition-colors active:bg-ios-red/10"

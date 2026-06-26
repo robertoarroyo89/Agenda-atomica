@@ -17,7 +17,8 @@ export function useAuth() {
   return ctx
 }
 
-// Translates Firebase error codes into friendly Spanish messages.
+// Traduce los códigos de error de Firebase a mensajes en español.
+// Si el código no está mapeado, lo muestra entre paréntesis para diagnóstico.
 function traducirError(code) {
   const mapa = {
     'auth/invalid-email': 'El correo no tiene un formato válido.',
@@ -27,10 +28,20 @@ function traducirError(code) {
     'auth/invalid-credential': 'Correo o contraseña incorrectos.',
     'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
     'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+    'auth/missing-password': 'Escribe una contraseña.',
     'auth/popup-closed-by-user': 'Has cerrado la ventana antes de terminar.',
+    'auth/popup-blocked': 'El navegador ha bloqueado la ventana emergente.',
+    'auth/cancelled-popup-request': 'Se canceló el intento anterior. Prueba de nuevo.',
     'auth/too-many-requests': 'Demasiados intentos. Inténtalo más tarde.',
+    'auth/network-request-failed': 'Sin conexión. Revisa tu red e inténtalo otra vez.',
+    'auth/operation-not-allowed':
+      'Este método de acceso no está activado en Firebase (Authentication → Sign-in method).',
+    'auth/unauthorized-domain':
+      'Este dominio no está autorizado en Firebase (Authentication → Settings → Authorized domains).',
+    'auth/invalid-api-key': 'La clave de Firebase no es válida. Revisa las variables en Vercel.',
   }
-  return mapa[code] || 'Algo ha fallado. Vuelve a intentarlo.'
+  if (mapa[code]) return mapa[code]
+  return `Algo ha fallado. Vuelve a intentarlo. (${code || 'desconocido'})`
 }
 
 export function AuthProvider({ children }) {
@@ -51,6 +62,7 @@ export function AuthProvider({ children }) {
       if (nombre) await updateProfile(cred.user, { displayName: nombre })
       return { ok: true }
     } catch (e) {
+      console.error('[Auth] registrar:', e.code, e.message)
       return { ok: false, error: traducirError(e.code) }
     }
   }
@@ -60,6 +72,7 @@ export function AuthProvider({ children }) {
       await signInWithEmailAndPassword(auth, email, password)
       return { ok: true }
     } catch (e) {
+      console.error('[Auth] iniciarSesion:', e.code, e.message)
       return { ok: false, error: traducirError(e.code) }
     }
   }
@@ -69,6 +82,7 @@ export function AuthProvider({ children }) {
       await signInWithPopup(auth, googleProvider)
       return { ok: true }
     } catch (e) {
+      console.error('[Auth] entrarConGoogle:', e.code, e.message)
       return { ok: false, error: traducirError(e.code) }
     }
   }

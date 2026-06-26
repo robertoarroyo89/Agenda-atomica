@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from './context/AuthContext'
-import { AgendaProvider } from './context/AgendaContext'
+import { AgendaProvider, useAgenda } from './context/AgendaContext'
 import IOSAuthScreen from './components/auth/iOSAuthScreen'
+import HabitSelector from './components/onboarding/HabitSelector'
 import StatusBar from './components/layout/StatusBar'
 import TabBar from './components/layout/TabBar'
 import DynamicIslandQuote from './components/dashboard/DynamicIslandQuote'
@@ -25,13 +26,10 @@ function Dashboard() {
   return (
     <div className="min-h-screen">
       <StatusBar />
-
       <main className="mx-auto max-w-2xl px-4 pb-28 pt-4">
-        {/* The daily lesson stays pinned above every section. */}
         <div className="mb-4">
           <DynamicIslandQuote />
         </div>
-
         <div key={tab} className="animate-sheet-up space-y-4">
           {tab === 'enfoque' && (
             <>
@@ -44,10 +42,18 @@ function Dashboard() {
           {tab === 'diario' && <JournalReflection />}
         </div>
       </main>
-
       <TabBar active={tab} onChange={setTab} />
     </div>
   )
+}
+
+// Decide qué mostrar una vez hay sesión: carga, onboarding, editor o panel.
+function Root() {
+  const { perfilCargando, necesitaOnboarding, mostrarSelectorHabitos } = useAgenda()
+
+  if (perfilCargando) return <Splash />
+  if (necesitaOnboarding || mostrarSelectorHabitos) return <HabitSelector />
+  return <Dashboard />
 }
 
 export default function App() {
@@ -58,7 +64,7 @@ export default function App() {
 
   return (
     <AgendaProvider>
-      <Dashboard />
+      <Root />
     </AgendaProvider>
   )
 }

@@ -27,9 +27,15 @@ Cada usuario solo puede leer y escribir sus propios días:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/days/{dayId} {
+    match /users/{userId} {
+      // Documento de perfil (hábitos elegidos, onboarding).
       allow read, write: if request.auth != null
                          && request.auth.uid == userId;
+      // Documentos por día.
+      match /days/{dayId} {
+        allow read, write: if request.auth != null
+                           && request.auth.uid == userId;
+      }
     }
   }
 }
@@ -37,15 +43,24 @@ service cloud.firestore {
 
 ## Modelo de datos
 
-Un documento por usuario y por día, con clave `YYYY-MM-DD`:
+Perfil del usuario, con los hábitos que sigue (no se borran al editar: se
+marcan inactivos, así el historial nunca pierde su definición):
+
+```
+users/{uid}
+  onboardingCompleto: true
+  habits: [{ id, nombre, emoji, categoria, activo }]
+```
+
+Un documento por día, con clave `YYYY-MM-DD`:
 
 ```
 users/{uid}/days/{2026-06-26}
-  priorities: [{ id, text, done }]      // las 3 prioridades
-  schedule:   { "07:00": "...", ... }   // bloques horarios
-  habits:     [{ id, nombre, emoji, done }]
-  journal:    { logros, gratitud, manana }
-  updatedAt:  number
+  priorities:   [{ id, text, done }]   // las 3 prioridades
+  schedule:     { "07:00": "...", ... }// bloques horarios
+  completados:  { agua: true, ... }    // qué hábitos se cumplieron ese día
+  journal:      { logros, gratitud, manana }
+  updatedAt:    number
 ```
 
 Los cambios se guardan solos (escritura con *debounce* de 500 ms) y se
