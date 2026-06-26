@@ -58,10 +58,22 @@ export function AgendaProvider({ children }) {
   useEffect(() => {
     if (!perfilRef) return
     setPerfilCargando(true)
-    const unsub = onSnapshot(perfilRef, (snap) => {
-      setPerfil(snap.exists() ? snap.data() : { onboardingCompleto: false, habits: [] })
-      setPerfilCargando(false)
-    })
+    const unsub = onSnapshot(
+      perfilRef,
+      (snap) => {
+        setPerfil(
+          snap.exists() ? snap.data() : { onboardingCompleto: false, habits: [] },
+        )
+        setPerfilCargando(false)
+      },
+      (err) => {
+        // Si la lectura falla (p. ej. reglas de Firestore), no nos quedamos
+        // colgados: dejamos de cargar y lo registramos para diagnóstico.
+        console.error('[Firestore] perfil:', err.code, err.message)
+        setPerfil({ onboardingCompleto: false, habits: [], error: err.code })
+        setPerfilCargando(false)
+      },
+    )
     return unsub
   }, [perfilRef])
 
@@ -118,11 +130,18 @@ export function AgendaProvider({ children }) {
     if (!docRef) return
     hydrated.current = false
     setSyncing(true)
-    const unsub = onSnapshot(docRef, (snap) => {
-      setData(snap.exists() ? { ...dayVacio(), ...snap.data() } : dayVacio())
-      hydrated.current = true
-      setSyncing(false)
-    })
+    const unsub = onSnapshot(
+      docRef,
+      (snap) => {
+        setData(snap.exists() ? { ...dayVacio(), ...snap.data() } : dayVacio())
+        hydrated.current = true
+        setSyncing(false)
+      },
+      (err) => {
+        console.error('[Firestore] día:', err.code, err.message)
+        setSyncing(false)
+      },
+    )
     return () => {
       unsub()
       if (saveTimer.current) clearTimeout(saveTimer.current)

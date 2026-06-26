@@ -49,9 +49,30 @@ function Dashboard() {
 
 // Decide qué mostrar una vez hay sesión: carga, onboarding, editor o panel.
 function Root() {
-  const { perfilCargando, necesitaOnboarding, mostrarSelectorHabitos } = useAgenda()
+  const { perfil, perfilCargando, necesitaOnboarding, mostrarSelectorHabitos } =
+    useAgenda()
 
   if (perfilCargando) return <Splash />
+
+  // La lectura de Firestore falló (normalmente, reglas sin actualizar).
+  if (perfil?.error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6">
+        <div className="w-full max-w-md rounded-[28px] border border-white/40 bg-white/80 p-6 text-center shadow-card backdrop-blur-2xl">
+          <p className="text-[40px]">🔒</p>
+          <h1 className="mt-2 text-[20px] font-bold tracking-tight text-zinc-900">
+            No se puede acceder a tus datos
+          </h1>
+          <p className="mt-2 text-[15px] leading-relaxed text-zinc-500">
+            Revisa las reglas de Firestore en la consola de Firebase (Firestore →
+            Reglas) y pulsa Publicar. Después recarga esta página.
+          </p>
+          <p className="mt-3 text-[12px] text-zinc-300">Código: {perfil.error}</p>
+        </div>
+      </div>
+    )
+  }
+
   if (necesitaOnboarding || mostrarSelectorHabitos) return <HabitSelector />
   return <Dashboard />
 }
