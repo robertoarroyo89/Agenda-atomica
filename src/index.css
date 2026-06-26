@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  /* Soft system background, like iOS grouped views. */
+  background: linear-gradient(180deg, #f7f7fb 0%, #eef0f5 100%);
+  background-attachment: fixed;
+  color: #1c1c1e;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter',
+    system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Prevent overscroll bounce revealing white edges on iOS. */
+  overscroll-behavior-y: none;
+}
+
+@layer utilities {
+  .pt-safe {
+    padding-top: calc(var(--safe-top) + 0.5rem);
+  }
+  .pb-safe {
+    padding-bottom: calc(var(--safe-bottom) + 0.5rem);
+  }
+  .mt-safe {
+    margin-top: var(--safe-top);
+  }
+  /* Hide scrollbars while keeping scroll, for native feel. */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Honor the user's reduced-motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Inputs inherit the SF stack and lose the default tap highlight. */
+input,
+textarea,
+button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
